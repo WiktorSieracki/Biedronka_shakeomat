@@ -1,11 +1,11 @@
 import React from "react";
-import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+
 
 export default function Login() {
-  const router = useRouter();
 
   const handleClick = () => {
-    router.push("/Login");
+    signIn("keycloak");
   };
 
   return (

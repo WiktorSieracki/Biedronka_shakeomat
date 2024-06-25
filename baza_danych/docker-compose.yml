@@ -1,9 +1,0 @@
-version: "3"
-services:
-  hivemq:
-    image: hivemq/hivemq-ce:latest
-    container_name: biedronka_hivemq
-    ports:
-      - "8000:8000"
-      - "1883:1883"
-# docker-compose up -d

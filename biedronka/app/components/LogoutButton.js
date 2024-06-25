@@ -1,10 +1,10 @@
 import React from "react";
 import Cookies from "js-cookie";
+import { signOut } from "next-auth/react";
 
 export default function LogoutButton() {
   const handleClick = () => {
-    Cookies.remove("token");
-    window.location.reload();
+    signOut();
   };
   return (
     <div>

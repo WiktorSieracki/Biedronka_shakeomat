@@ -1,0 +1,5 @@
+FROM quay.io/keycloak/keycloak:25.0.1
+
+COPY ./biedronka-realm.json /opt/jboss/keycloak/imports/biedronka-realm.json
+
+CMD ["-Dkeycloak.profile.feature.upload_scripts=enabled", "-Dkeycloak.migration.action=import", "-Dkeycloak.migration.provider=singleFile", "-Dkeycloak.migration.file=/opt/jboss/keycloak/imports/biedronka-realm.json", "-Dkeycloak.migration.strategy=OVERWRITE_EXISTING", "start-dev"]

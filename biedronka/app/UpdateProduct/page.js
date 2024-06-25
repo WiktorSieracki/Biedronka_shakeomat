@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
 import {  useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function UpdateProduct() {
+  const { data: session } = useSession();
   const [message, setMessage] = useState("");
   const [product, setProduct] = useState({ name: null, price: null, description: null});
   const searchParams = useSearchParams();
@@ -15,6 +17,7 @@ export default function UpdateProduct() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + session.access_token,
         },
         body: JSON.stringify(product)
       });

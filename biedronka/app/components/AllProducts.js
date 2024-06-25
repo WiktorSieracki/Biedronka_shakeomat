@@ -1,30 +1,49 @@
 import React, { useEffect, useState } from "react";
 import { SearchContext } from "./Contexts";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 
 export default function AllProducts() {
   const [products, setProducts] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const { search } = React.useContext(SearchContext);
+  const { data: session } = useSession();
 
   useEffect(() => {
-    fetch(`http://localhost:5000/products/?search=${search}`)
-      .then((response) => response.json())
-      .then((data) => setProducts(data));
-
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/products/?search=${search}`);
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      }
+    };
+  
+    fetchData();
+  
     return () => {
       setProducts([]);
     };
-  }, [search,refresh]);
-
-  const handleDelete = (id) => {
-    fetch(`http://localhost:5000/products/${id}`, {
-      method: "DELETE",
-    })
-      .then((response) => response.json())
-      .then((data) => setRefresh(!refresh))
-      .catch((error) => console.error(error));
+  }, [search, refresh]);
+  
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/products/${id}`, {
+        method: "DELETE",
+        headers: {
+          'Authorization': 'Bearer ' + session.access_token,
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete the product');
+      }
+      await response.json(); // Assuming the response needs to be processed
+      setRefresh(!refresh);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+    }
   };
   return (
     <div className="flex flex-wrap justify-center">

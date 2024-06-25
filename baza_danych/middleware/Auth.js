@@ -1,19 +1,46 @@
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
-const secretKey = process.env.JWT_SECRET;
 
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  if (token == null) return res.sendStatus(401);
-  jwt.verify(token, secretKey, (err, user) => {
-    if (err) return res.sendStatus(403);
-    if (user == null || user._id == null) return res.sendStatus(403);
-    req.logged_in_user_id = user._id;
+const publicKey = process.env.PUBLIC_KEY;
+
+const isAuthenticated = async (
+  req,
+  res,
+  next,
+) => {
+  try {
+    if (!publicKey || publicKey === "null") {
+      console.error("Public key is not set or invalid.");
+      return res.status(500).send("Server error: public key not set.");
+    }
+
+    const bearer = req.headers.authorization;
+    if (!bearer) {
+      console.error("Authorization header is missing.");
+      return res
+        .status(401)
+        .send("Unauthorized: Authorization header missing.");
+    }
+
+    const token = bearer.split(" ")[1];
+    console.log("token", token);
+    if (!token) {
+      console.error("Bearer token is missing.");
+      return res.status(403).send("Forbidden: Bearer token missing.");
+    }
+
+    const decoded = jwt.verify(
+      token,
+      `-----BEGIN PUBLIC KEY-----\n${publicKey}\n-----END PUBLIC KEY-----`,
+      { algorithms: ["RS256"] }
+    );
+    req.token = decoded;
     next();
-  });
-}
-
-module.exports = {
-  authenticateToken,
+  } catch (err) {
+    console.error("Token verification failed:", err);
+    return res.status(401).send("Unauthorized: Token verification failed.");
+  }
 };
+
+module.exports = isAuthenticated;

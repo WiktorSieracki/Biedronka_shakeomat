@@ -1,11 +1,15 @@
 const express = require("express");
 const ProductRoutes = express.Router();
 const Product = require("../models/Product");
+const authenticateToken = require("../middleware/Auth");
+const isAdmin = require("../middleware/Admin");
 const mqtt = require("mqtt");
-const mqttClient = mqtt.connect("ws://localhost:8000/mqtt");
+const mqttClient = mqtt.connect("ws://hivemq-biedronka:8000/mqtt");
+const jwt = require("jsonwebtoken");
+
 
 // Create a new product
-ProductRoutes.post("/products", async (req, res) => {
+ProductRoutes.post("/products",[authenticateToken,isAdmin], async (req, res) => {
   const product = new Product(req.body);
   await product.save();
   mqttClient.publish("products", `New product added: ${req.body.name}`);
@@ -38,7 +42,7 @@ ProductRoutes.get("/products/:id", async (req, res) => {
 });
 
 // Update a product by id
-ProductRoutes.patch("/products/:id", async (req, res) => {
+ProductRoutes.patch("/products/:id",[authenticateToken,isAdmin], async (req, res) => {
   const updates = Object.keys(req.body);
   const allowedUpdates = ["name", "price", "description"];
   const isValidOperation = updates.every((update) =>
@@ -59,7 +63,7 @@ ProductRoutes.patch("/products/:id", async (req, res) => {
 });
 
 // Delete a product by id
-ProductRoutes.delete("/products/:id", async (req, res) => {
+ProductRoutes.delete("/products/:id",[authenticateToken,isAdmin], async (req, res) => {
   const product = await Product.findByIdAndDelete(req.params.id);
   const name = product.name;
 

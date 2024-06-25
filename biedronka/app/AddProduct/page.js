@@ -1,20 +1,28 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function AddProductPage() {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const router = useRouter();
+  const { data: session } = useSession();
 
   const handleSubmit = (event) => {
+    console.log("session", session.roles);
+    if (session.roles.includes("admin") === false) {
+      alert("You are not authorized to add products");
+      return;
+    }
     event.preventDefault();
     const product = { name, price, description };
     fetch("http://localhost:5000/products", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer " + session.access_token,
       },
       body: JSON.stringify(product),
     })

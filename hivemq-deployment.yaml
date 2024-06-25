@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: hivemq-biedronka
+  name: hivemq-biedronka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: hivemq-biedronka
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        io.kompose.network/projekt---technologie-chmurowe-wiktorsieracki-default: "true"
+        io.kompose.service: hivemq-biedronka
+    spec:
+      containers:
+        - image: hivemq/hivemq-ce:latest
+          name: hivemq-biedronka
+          ports:
+            - containerPort: 8000
+              hostPort: 8000
+              protocol: TCP
+            - containerPort: 1883
+              hostPort: 1883
+              protocol: TCP
+          resources: {}
+      restartPolicy: Always
+status: {}
